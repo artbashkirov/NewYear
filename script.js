@@ -1,73 +1,79 @@
-// Итоги года 2025 - Адаптивный слайдер
+// Итоги года 2025 - Слайдер с макетом Figma
 const TOTAL_CARDS = 14;
-const CARD_DURATION = 5000; // 5 секунд на карточку
+const CARD_DURATION = 5000; // 5 секунд
 let currentIndex = 0;
 let autoPlayInterval = null;
-let progressAnimationFrame = null;
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
+    initProgressBar();
     initSlider();
+    updateView();
     startAutoPlay();
+    initEventListeners();
 });
 
-function initSlider() {
-    const slider = document.querySelector('.slider');
+// Создание прогресс-бара
+function initProgressBar() {
+    const progressBar = document.querySelector('.progress-bar');
     
-    // Создаем карточки
+    for (let i = 0; i < TOTAL_CARDS; i++) {
+        const segment = document.createElement('div');
+        segment.className = 'progress-segment';
+        segment.dataset.index = i;
+        
+        // Клик по сегменту для перехода
+        segment.addEventListener('click', () => goToCard(i));
+        
+        progressBar.appendChild(segment);
+    }
+}
+
+// Создание карточек слайдера
+function initSlider() {
+    const slides = document.querySelector('.slides');
+    
     for (let i = 0; i < TOTAL_CARDS; i++) {
         const card = document.createElement('div');
         card.className = 'card';
         card.dataset.index = i;
         
         const img = document.createElement('img');
-        // Загружаем изображения @2x для высокого качества
         img.src = `img/${String(i + 1).padStart(2, '0')}@2x.png`;
-        img.alt = `Карточка ${i + 1}`;
+        img.alt = `Итоги ${i + 1}`;
+        img.loading = 'lazy';
+        
+        // Fallback если изображение не загрузилось
         img.onerror = () => {
-            // Если @2x не найден, пробуем без @2x
             img.src = `img/${String(i + 1).padStart(2, '0')}.png`;
-            img.onerror = () => {
-                // Если нет изображения, показываем плейсхолдер
-                img.src = `https://via.placeholder.com/360x640/3d0000/ffffff?text=Card+${i + 1}`;
-            };
         };
         
         card.appendChild(img);
-        slider.appendChild(card);
+        slides.appendChild(card);
     }
-    
-    updateCards();
-    updateProgressBar();
 }
 
-function updateCards() {
+// Обновление отображения
+function updateView() {
     const cards = document.querySelectorAll('.card');
+    const segments = document.querySelectorAll('.progress-segment');
     
+    // Обновляем карточки
     cards.forEach((card, index) => {
-        const cardIndex = parseInt(card.dataset.index);
+        card.classList.remove('position-left', 'position-center', 'position-right', 'hidden');
         
-        // Удаляем все классы позиций
-        card.classList.remove('left', 'center', 'right', 'hidden');
-        
-        if (cardIndex === currentIndex - 1) {
-            card.classList.add('left');
-        } else if (cardIndex === currentIndex) {
-            card.classList.add('center');
-        } else if (cardIndex === currentIndex + 1) {
-            card.classList.add('right');
+        if (index === currentIndex - 1) {
+            card.classList.add('position-left');
+        } else if (index === currentIndex) {
+            card.classList.add('position-center');
+        } else if (index === currentIndex + 1) {
+            card.classList.add('position-right');
         } else {
             card.classList.add('hidden');
         }
     });
     
-    // Обновляем состояние кнопок навигации
-    updateNavigationButtons();
-}
-
-function updateProgressBar() {
-    const segments = document.querySelectorAll('.progress-segment');
-    
+    // Обновляем прогресс-бар
     segments.forEach((segment, index) => {
         segment.classList.remove('completed', 'active');
         
@@ -77,53 +83,51 @@ function updateProgressBar() {
             segment.classList.add('active');
         }
     });
+    
+    // Обновляем кнопки навигации
+    updateNavigationButtons();
 }
 
+// Следующая карточка
 function nextCard() {
     if (currentIndex < TOTAL_CARDS - 1) {
         currentIndex++;
-        updateCards();
-        updateProgressBar();
+        updateView();
         
-        // Если достигли последней карточки, останавливаем автопрокрутку
+        // Останавливаем автопрокрутку на последней карточке
         if (currentIndex === TOTAL_CARDS - 1) {
             stopAutoPlay();
+        } else {
+            restartAutoPlay();
         }
     }
 }
 
+// Предыдущая карточка
 function prevCard() {
     if (currentIndex > 0) {
         currentIndex--;
-        updateCards();
-        updateProgressBar();
-        
-        // Возобновляем автопрокрутку если откатились назад
-        if (currentIndex < TOTAL_CARDS - 1 && !autoPlayInterval) {
-            startAutoPlay();
-        }
+        updateView();
+        restartAutoPlay();
     }
 }
 
+// Переход на конкретную карточку
 function goToCard(index) {
-    if (index >= 0 && index < TOTAL_CARDS) {
+    if (index >= 0 && index < TOTAL_CARDS && index !== currentIndex) {
         currentIndex = index;
-        updateCards();
-        updateProgressBar();
+        updateView();
         
-        // Останавливаем автопрокрутку при ручном переходе
-        stopAutoPlay();
-        
-        // Возобновляем автопрокрутку, если не последняя карточка
-        if (currentIndex < TOTAL_CARDS - 1) {
-            startAutoPlay();
+        if (currentIndex === TOTAL_CARDS - 1) {
+            stopAutoPlay();
+        } else {
+            restartAutoPlay();
         }
     }
 }
 
+// Автопрокрутка
 function startAutoPlay() {
-    stopAutoPlay(); // Очищаем предыдущий интервал
-    
     if (currentIndex < TOTAL_CARDS - 1) {
         autoPlayInterval = setInterval(() => {
             nextCard();
@@ -138,62 +142,70 @@ function stopAutoPlay() {
     }
 }
 
-function updateNavigationButtons() {
-    const leftBtn = document.querySelector('.nav-btn-left');
-    const rightBtn = document.querySelector('.nav-btn-right');
-    
-    leftBtn.disabled = currentIndex === 0;
-    rightBtn.disabled = currentIndex === TOTAL_CARDS - 1;
+function restartAutoPlay() {
+    stopAutoPlay();
+    startAutoPlay();
 }
 
-// Обработчики событий
-document.querySelector('.nav-btn-left').addEventListener('click', () => {
-    prevCard();
-});
+// Обновление кнопок навигации
+function updateNavigationButtons() {
+    const leftBtn = document.querySelector('.nav-arrow-left');
+    const rightBtn = document.querySelector('.nav-arrow-right');
+    
+    if (leftBtn) leftBtn.disabled = currentIndex === 0;
+    if (rightBtn) rightBtn.disabled = currentIndex === TOTAL_CARDS - 1;
+}
 
-document.querySelector('.nav-btn-right').addEventListener('click', () => {
-    nextCard();
-});
-
-// Клик по сегментам прогресс-бара
-document.querySelectorAll('.progress-segment').forEach((segment, index) => {
-    segment.addEventListener('click', () => {
-        goToCard(index);
+// Инициализация событий
+function initEventListeners() {
+    // Кнопки навигации
+    const leftBtn = document.querySelector('.nav-arrow-left');
+    const rightBtn = document.querySelector('.nav-arrow-right');
+    
+    if (leftBtn) leftBtn.addEventListener('click', prevCard);
+    if (rightBtn) rightBtn.addEventListener('click', nextCard);
+    
+    // Клавиатурная навигация
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') {
+            prevCard();
+        } else if (e.key === 'ArrowRight') {
+            nextCard();
+        }
     });
     
-    // Добавляем курсор pointer
-    segment.style.cursor = 'pointer';
-});
-
-// Клавиатурная навигация
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') {
-        prevCard();
-    } else if (e.key === 'ArrowRight') {
-        nextCard();
+    // Пауза при наведении на центральную карточку
+    document.addEventListener('mouseenter', (e) => {
+        if (e.target.closest('.card.position-center')) {
+            stopAutoPlay();
+        }
+    }, true);
+    
+    document.addEventListener('mouseleave', (e) => {
+        if (e.target.closest('.card.position-center') && currentIndex < TOTAL_CARDS - 1) {
+            startAutoPlay();
+        }
+    }, true);
+    
+    // Пауза/возобновление при смене видимости вкладки
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            stopAutoPlay();
+        } else if (currentIndex < TOTAL_CARDS - 1) {
+            startAutoPlay();
+        }
+    });
+    
+    // Кнопка закрытия
+    const closeBtn = document.querySelector('.btn-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            if (confirm('Закрыть презентацию?')) {
+                window.close();
+            }
+        });
     }
-});
+}
 
-// Пауза при наведении на карточку
-document.addEventListener('mouseenter', (e) => {
-    if (e.target.closest('.card.center')) {
-        stopAutoPlay();
-    }
-}, true);
-
-document.addEventListener('mouseleave', (e) => {
-    if (e.target.closest('.card.center') && currentIndex < TOTAL_CARDS - 1) {
-        startAutoPlay();
-    }
-}, true);
-
-// Пауза/возобновление при смене видимости вкладки
-document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-        stopAutoPlay();
-    } else if (currentIndex < TOTAL_CARDS - 1) {
-        startAutoPlay();
-    }
-});
-
-console.log('Слайдер инициализирован. Карточек:', TOTAL_CARDS);
+console.log('Слайдер "Итоги года 2025" инициализирован');
+console.log(`Карточек: ${TOTAL_CARDS}, Длительность: ${CARD_DURATION}ms`);

@@ -7,33 +7,46 @@
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo-wrapper">
+                    <img src="assets/logo-market.svg" alt="Маркет" class="logo-market">
+                    <img src="assets/yandex-logo.svg" alt="Яндекс" class="logo-yandex">
+                </div>
+                <div class="header-title">Мои итоги<br>2025 года</div>
+            </div>
+            <div class="header-right">
+                <button class="btn-close">
+                    <img src="assets/close-icon.svg" alt="Закрыть">
+                </button>
+            </div>
+        </header>
+
         <!-- Progress Bar -->
         <div class="progress-bar">
-            <div class="progress-segment" data-index="0"></div>
-            <div class="progress-segment" data-index="1"></div>
-            <div class="progress-segment" data-index="2"></div>
-            <div class="progress-segment" data-index="3"></div>
-            <div class="progress-segment" data-index="4"></div>
-            <div class="progress-segment" data-index="5"></div>
-            <div class="progress-segment" data-index="6"></div>
-            <div class="progress-segment" data-index="7"></div>
-            <div class="progress-segment" data-index="8"></div>
-            <div class="progress-segment" data-index="9"></div>
-            <div class="progress-segment" data-index="10"></div>
-            <div class="progress-segment" data-index="11"></div>
-            <div class="progress-segment" data-index="12"></div>
-            <div class="progress-segment" data-index="13"></div>
+            <!-- 14 segments for 14 cards -->
         </div>
 
         <!-- Slider Container -->
-        <div class="slider">
-            <!-- Cards will be injected by JavaScript -->
+        <div class="slider-container">
+            <!-- Navigation Arrows -->
+            <button class="nav-arrow nav-arrow-left" aria-label="Предыдущая">
+                <img src="assets/arrow-left.svg" alt="←">
+            </button>
+            <button class="nav-arrow nav-arrow-right" aria-label="Следующая">
+                <img src="assets/arrow-right.svg" alt="→">
+            </button>
+
+            <!-- Slides will be injected by JavaScript -->
+            <div class="slides">
+                <!-- Cards dynamically added -->
+            </div>
         </div>
 
-        <!-- Navigation Controls -->
-        <button class="nav-btn nav-btn-left" aria-label="Предыдущая карточка">‹</button>
-        <button class="nav-btn nav-btn-right" aria-label="Следующая карточка">›</button>
+        <!-- Side Decoration -->
+        <div class="side-decoration"></div>
     </div>
 
     <script src="script.js"></script>
