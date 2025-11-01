@@ -3,6 +3,7 @@ const TOTAL_CARDS = 14;
 const CARD_DURATION = 5000; // 5 секунд
 let currentIndex = 0;
 let autoPlayInterval = null;
+let allCards = []; // Массив для хранения всех карточек
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
@@ -33,6 +34,16 @@ function initProgressBar() {
 function initSlider() {
     const slides = document.querySelector('.slides');
     
+    // Создаем три слота для трёх видимых карточек
+    for (let position = 0; position < 3; position++) {
+        const slot = document.createElement('div');
+        slot.className = 'card-slot';
+        slot.dataset.position = position; // 0=left, 1=center, 2=right
+        slides.appendChild(slot);
+    }
+    
+    // Создаем все карточки (они будут перемещаться между слотами)
+    allCards = [];
     for (let i = 0; i < TOTAL_CARDS; i++) {
         const card = document.createElement('div');
         card.className = 'card';
@@ -49,29 +60,40 @@ function initSlider() {
         };
         
         card.appendChild(img);
-        slides.appendChild(card);
+        allCards.push(card);
     }
 }
 
 // Обновление отображения
 function updateView() {
-    const cards = document.querySelectorAll('.card');
+    const slots = document.querySelectorAll('.card-slot');
     const segments = document.querySelectorAll('.progress-segment');
     
-    // Обновляем карточки
-    cards.forEach((card, index) => {
-        card.classList.remove('position-left', 'position-center', 'position-right', 'hidden');
-        
-        if (index === currentIndex - 1) {
-            card.classList.add('position-left');
-        } else if (index === currentIndex) {
-            card.classList.add('position-center');
-        } else if (index === currentIndex + 1) {
-            card.classList.add('position-right');
-        } else {
-            card.classList.add('hidden');
-        }
+    // Очищаем все слоты
+    slots.forEach(slot => {
+        slot.innerHTML = '';
+        slot.classList.remove('position-left', 'position-center', 'position-right');
     });
+    
+    // Размещаем карточки в слотах
+    const leftIndex = currentIndex - 1;
+    const centerIndex = currentIndex;
+    const rightIndex = currentIndex + 1;
+    
+    if (leftIndex >= 0 && leftIndex < TOTAL_CARDS) {
+        slots[0].classList.add('position-left');
+        slots[0].appendChild(allCards[leftIndex].cloneNode(true));
+    }
+    
+    if (centerIndex >= 0 && centerIndex < TOTAL_CARDS) {
+        slots[1].classList.add('position-center');
+        slots[1].appendChild(allCards[centerIndex].cloneNode(true));
+    }
+    
+    if (rightIndex >= 0 && rightIndex < TOTAL_CARDS) {
+        slots[2].classList.add('position-right');
+        slots[2].appendChild(allCards[rightIndex].cloneNode(true));
+    }
     
     // Обновляем прогресс-бар
     segments.forEach((segment, index) => {
@@ -176,13 +198,13 @@ function initEventListeners() {
     
     // Пауза при наведении на центральную карточку
     document.addEventListener('mouseenter', (e) => {
-        if (e.target.closest('.card.position-center')) {
+        if (e.target.closest('.card-slot.position-center')) {
             stopAutoPlay();
         }
     }, true);
     
     document.addEventListener('mouseleave', (e) => {
-        if (e.target.closest('.card.position-center') && currentIndex < TOTAL_CARDS - 1) {
+        if (e.target.closest('.card-slot.position-center') && currentIndex < TOTAL_CARDS - 1) {
             startAutoPlay();
         }
     }, true);
