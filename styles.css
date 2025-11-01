@@ -8,23 +8,18 @@ body {
     margin: 0;
     padding: 0;
     font-family: 'YS Text', -apple-system, sans-serif;
-    background: #000;
+    background: #3d0000;
     overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
 }
 
-/* Main Container - адаптивный с ограничениями */
+/* Main Container - на весь экран с отступами */
 .app {
     position: relative;
-    width: 100%;
-    max-width: 1600px;
-    height: 70vh;
-    max-height: 864px;
+    width: 100vw;
+    height: 100vh;
     background: #3d0000;
-    margin: 0 72px;
+    padding: 0 72px;
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
 }
@@ -197,6 +192,11 @@ body {
     right: 32px;
 }
 
+/* Разворачиваем правую стрелку */
+.nav-arrow-right img {
+    transform: scaleX(-1);
+}
+
 /* Slides */
 .slides {
     position: relative;
@@ -210,10 +210,7 @@ body {
 /* Card - фиксированное соотношение сторон */
 .card {
     position: absolute;
-    width: 30%;
-    max-width: 400px;
-    height: 80%;
-    max-height: 650px;
+    aspect-ratio: 491 / 720;
     border-radius: 32px;
     overflow: hidden;
     transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -232,9 +229,8 @@ body {
 
 /* Card Positions */
 .card.position-left {
-    left: 5%;
-    height: 64%; /* 80% от центральной */
-    transform: scale(1);
+    left: 8%;
+    height: 56%; /* 80% от 70% = 56% */
     opacity: 0.1;
     z-index: 1;
     pointer-events: none;
@@ -242,16 +238,15 @@ body {
 
 .card.position-center {
     left: 50%;
-    height: 80%;
-    transform: translateX(-50%) scale(1);
+    height: 70%;
+    transform: translateX(-50%);
     opacity: 1;
     z-index: 3;
 }
 
 .card.position-right {
-    right: 5%;
-    height: 64%; /* 80% от центральной */
-    transform: scale(1);
+    right: 8%;
+    height: 56%; /* 80% от 70% = 56% */
     opacity: 0.1;
     z-index: 1;
     pointer-events: none;
