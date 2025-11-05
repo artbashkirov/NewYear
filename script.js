@@ -34,66 +34,56 @@ function initProgressBar() {
 function initSlider() {
     const slides = document.querySelector('.slides');
     
-    // Создаем три слота для трёх видимых карточек
-    for (let position = 0; position < 3; position++) {
-        const slot = document.createElement('div');
-        slot.className = 'card-slot';
-        slot.dataset.position = position; // 0=left, 1=center, 2=right
-        slides.appendChild(slot);
-    }
-    
-    // Создаем все карточки (они будут перемещаться между слотами)
-    allCards = [];
+    // Создаем ВСЕ карточки сразу в DOM
     for (let i = 0; i < TOTAL_CARDS; i++) {
         const card = document.createElement('div');
         card.className = 'card';
         card.dataset.index = i;
         
         const img = document.createElement('img');
-        img.src = `img/${String(i + 1).padStart(2, '0')}@2x.png`;
+        img.src = `img/loc_Card${String(i + 1).padStart(2, '0')}@2x.png`;
         img.alt = `Итоги ${i + 1}`;
-        img.loading = 'lazy';
+        img.loading = i < 3 ? 'eager' : 'lazy';
         
         // Fallback если изображение не загрузилось
         img.onerror = () => {
-            img.src = `img/${String(i + 1).padStart(2, '0')}.png`;
+            console.error(`Не удалось загрузить: ${img.src}`);
         };
         
         card.appendChild(img);
+        slides.appendChild(card);
         allCards.push(card);
     }
 }
 
 // Обновление отображения
 function updateView() {
-    const slots = document.querySelectorAll('.card-slot');
     const segments = document.querySelectorAll('.progress-segment');
     
-    // Очищаем все слоты
-    slots.forEach(slot => {
-        slot.innerHTML = '';
-        slot.classList.remove('position-left', 'position-center', 'position-right');
+    // Обновляем классы всех карточек
+    allCards.forEach((card, index) => {
+        // Удаляем все позиционные классы
+        card.classList.remove('position-left', 'position-center', 'position-right', 'position-far-left', 'position-far-right', 'hidden');
+        
+        const diff = index - currentIndex;
+        
+        if (diff < -1) {
+            // Карточки далеко слева (скрыты)
+            card.classList.add('position-far-left');
+        } else if (diff === -1) {
+            // Левая карточка (видимая)
+            card.classList.add('position-left');
+        } else if (diff === 0) {
+            // Центральная карточка
+            card.classList.add('position-center');
+        } else if (diff === 1) {
+            // Правая карточка (видимая)
+            card.classList.add('position-right');
+        } else if (diff > 1) {
+            // Карточки далеко справа (скрыты)
+            card.classList.add('position-far-right');
+        }
     });
-    
-    // Размещаем карточки в слотах
-    const leftIndex = currentIndex - 1;
-    const centerIndex = currentIndex;
-    const rightIndex = currentIndex + 1;
-    
-    if (leftIndex >= 0 && leftIndex < TOTAL_CARDS) {
-        slots[0].classList.add('position-left');
-        slots[0].appendChild(allCards[leftIndex].cloneNode(true));
-    }
-    
-    if (centerIndex >= 0 && centerIndex < TOTAL_CARDS) {
-        slots[1].classList.add('position-center');
-        slots[1].appendChild(allCards[centerIndex].cloneNode(true));
-    }
-    
-    if (rightIndex >= 0 && rightIndex < TOTAL_CARDS) {
-        slots[2].classList.add('position-right');
-        slots[2].appendChild(allCards[rightIndex].cloneNode(true));
-    }
     
     // Обновляем прогресс-бар
     segments.forEach((segment, index) => {
@@ -101,9 +91,14 @@ function updateView() {
         
         if (index < currentIndex) {
             segment.classList.add('completed');
-        } else if (index === currentIndex && index < TOTAL_CARDS - 1) {
-            // Не добавляем active для последней карточки (она показывается бесконечно)
-            segment.classList.add('active');
+        } else if (index === currentIndex) {
+            // Последняя карточка - сразу completed (без анимации)
+            if (currentIndex === TOTAL_CARDS - 1) {
+                segment.classList.add('completed');
+            } else {
+                // Остальные - с анимацией
+                segment.classList.add('active');
+            }
         }
     });
     
@@ -199,13 +194,13 @@ function initEventListeners() {
     
     // Пауза при наведении на центральную карточку
     document.addEventListener('mouseenter', (e) => {
-        if (e.target.closest('.card-slot.position-center')) {
+        if (e.target.closest('.card.position-center')) {
             stopAutoPlay();
         }
     }, true);
     
     document.addEventListener('mouseleave', (e) => {
-        if (e.target.closest('.card-slot.position-center') && currentIndex < TOTAL_CARDS - 1) {
+        if (e.target.closest('.card.position-center') && currentIndex < TOTAL_CARDS - 1) {
             startAutoPlay();
         }
     }, true);
