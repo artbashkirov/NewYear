@@ -312,19 +312,6 @@ function initEventListeners() {
     // Touch события для свайпов на мобильных
     initTouchEvents();
     
-    // Пауза при наведении на центральную карточку (десктоп)
-    document.addEventListener('mouseenter', (e) => {
-        if (e.target.closest('.card.position-center')) {
-            pauseProgress();
-        }
-    }, true);
-    
-    document.addEventListener('mouseleave', (e) => {
-        if (e.target.closest('.card.position-center') && currentIndex < TOTAL_CARDS - 1) {
-            resumeProgress();
-        }
-    }, true);
-    
     // Пауза при зажатии курсора на карточке (десктоп)
     const sliderContainer = document.querySelector('.slider-container');
     if (sliderContainer) {
