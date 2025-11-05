@@ -101,7 +101,8 @@ function updateView() {
         
         if (index < currentIndex) {
             segment.classList.add('completed');
-        } else if (index === currentIndex) {
+        } else if (index === currentIndex && index < TOTAL_CARDS - 1) {
+            // Не добавляем active для последней карточки (она показывается бесконечно)
             segment.classList.add('active');
         }
     });

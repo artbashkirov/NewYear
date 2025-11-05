@@ -16,21 +16,25 @@ body {
 .app {
     position: relative;
     width: 100vw;
+    max-width: 1920px;
     height: 100vh;
     background: #3d0000;
     padding: 0 72px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    margin: 0 auto;
 }
 
-/* Header */
+/* Header - растягивается на весь экран с отступом 32px */
 .header {
     position: absolute;
     top: 32px;
-    left: 33px;
-    right: 33px;
-    height: 28px;
+    left: 32px;
+    right: 32px;
+    max-width: 1920px;
+    margin: 0 auto;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -43,29 +47,15 @@ body {
     gap: 8px;
 }
 
-.logo-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    height: 28px;
-}
-
-.logo-market {
-    height: 17.35px;
-    width: auto;
-}
-
-.logo-yandex {
-    height: 28px;
-    width: 28px;
-}
-
-.header-title {
-    font-family: 'YS Text', sans-serif;
-    font-weight: 700;
-    font-size: 11px;
-    line-height: 12px;
-    color: #ffffff;
+.logo-ny {
+    height: 32px;
+    width: 217px;
+    object-fit: contain;
+    object-position: left top;
+    display: block;
+    vertical-align: top;
+    margin: 0;
+    padding: 0;
 }
 
 .header-right {
@@ -75,10 +65,9 @@ body {
 .btn-close {
     width: 28px;
     height: 28px;
-    background: rgba(255, 255, 255, 0.08);
+    background: transparent;
     border: none;
-    border-radius: 100px;
-    padding: 6px;
+    padding: 0;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -86,14 +75,14 @@ body {
 }
 
 .btn-close img {
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
 }
 
-/* Progress Bar */
+/* Progress Bar - под хедером */
 .progress-bar {
     position: absolute;
-    top: 47px;
+    top: 76px; /* 32px + 32px header + 12px gap */
     left: 50%;
     transform: translateX(-50%);
     width: 416px;
@@ -139,22 +128,25 @@ body {
     to { width: 100%; }
 }
 
-/* Slider Container */
+/* Slider Container - контейнер ТОЛЬКО для карусели */
 .slider-container {
     position: absolute;
-    top: 94px;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100vw - 176px); /* 88px * 2 боковые отступы */
+    max-width: 1600px;
+    height: 70vh;
+    max-height: 864px;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow: visible;
 }
 
-/* Navigation Arrows */
+/* Navigation Arrows - по краям страницы, вне контейнера */
 .nav-arrow {
-    position: absolute;
+    position: fixed;
     top: 50%;
     transform: translateY(-50%);
     width: 24px;
@@ -192,6 +184,17 @@ body {
     right: 32px;
 }
 
+/* На экранах > 1920px стрелки остаются на краях контейнера 1920px */
+@media (min-width: 1921px) {
+    .nav-arrow-left {
+        left: calc((100vw - 1920px) / 2 + 32px);
+    }
+    
+    .nav-arrow-right {
+        right: calc((100vw - 1920px) / 2 + 32px);
+    }
+}
+
 /* Разворачиваем правую стрелку */
 .nav-arrow-right img {
     transform: scaleX(-1);
@@ -210,49 +213,46 @@ body {
 /* Card Slot - контейнер для карточки, занимает 1/3 ширины */
 .card-slot {
     flex: 0 0 33.333%;
-    height: 100%;
+    max-height: 100%;
     display: flex;
     align-items: center;
     justify-content: center;
     position: relative;
+    overflow: visible;
 }
 
-/* Card - масштабируется внутри своего слота */
+/* Card - строго сохраняем пропорции 491:720 */
 .card {
     position: relative;
     width: 100%;
-    height: 100%;
     aspect-ratio: 491 / 720;
     border-radius: 32px;
     overflow: hidden;
     transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    background: #671c1c;
-    object-fit: contain;
+    background: transparent;
 }
 
-/* Центральная карточка использует всё доступное пространство */
-.card-slot.position-center .card {
-    max-width: 100%;
-    max-height: 100%;
-}
-
-/* Боковые карточки - 80% высоты центральной */
-.card-slot.position-left .card,
-.card-slot.position-right .card {
-    max-height: 80%;
-    opacity: 0.1;
+/* Центральная карточка - максимальная высота контейнера */
+.card-slot.position-center {
+    z-index: 3;
 }
 
 .card-slot.position-center .card {
     opacity: 1;
-    z-index: 3;
 }
 
+/* Боковые карточки - 80% высоты центральной */
 .card-slot.position-left,
 .card-slot.position-right {
     z-index: 1;
     pointer-events: none;
+}
+
+.card-slot.position-left .card,
+.card-slot.position-right .card {
+    opacity: 0.1;
+    transform: scale(0.8);
 }
 
 .card img {
@@ -269,19 +269,6 @@ body {
     transform: scale(0.7);
     pointer-events: none;
     z-index: 0;
-}
-
-/* Side Decoration */
-.side-decoration {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 247px;
-    height: 100%;
-    background: #d9d9d9;
-    opacity: 0.1;
-    z-index: 0;
-    pointer-events: none;
 }
 
 /* Responsive для мобильных */
@@ -312,10 +299,6 @@ body {
     .card.position-right {
         opacity: 0;
         transform: scale(0.6);
-    }
-    
-    .side-decoration {
-        display: none;
     }
 }
 
