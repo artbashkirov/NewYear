@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateView();
     startAutoPlay();
     initEventListeners();
+    updateLogoForScreenSize();
 });
 
 // Создание прогресс-бара
@@ -192,6 +193,9 @@ function initEventListeners() {
         }
     });
     
+    // Touch события для свайпов на мобильных
+    initTouchEvents();
+    
     // Пауза при наведении на центральную карточку
     document.addEventListener('mouseenter', (e) => {
         if (e.target.closest('.card.position-center')) {
@@ -224,6 +228,65 @@ function initEventListeners() {
         });
     }
 }
+
+// Обработка свайпов на мобильных
+function initTouchEvents() {
+    const sliderContainer = document.querySelector('.slider-container');
+    if (!sliderContainer) return;
+    
+    let touchStartX = 0;
+    let touchEndX = 0;
+    let touchStartY = 0;
+    let touchEndY = 0;
+    
+    sliderContainer.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+    
+    sliderContainer.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        touchEndY = e.changedTouches[0].screenY;
+        handleSwipe();
+    }, { passive: true });
+    
+    function handleSwipe() {
+        const diffX = touchEndX - touchStartX;
+        const diffY = touchEndY - touchStartY;
+        
+        // Проверяем что это горизонтальный свайп (не вертикальный)
+        if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+            if (diffX > 0) {
+                // Свайп вправо - предыдущая карточка
+                prevCard();
+            } else {
+                // Свайп влево - следующая карточка
+                nextCard();
+            }
+        }
+    }
+}
+
+// Переключение логотипа для мобильной версии
+function updateLogoForScreenSize() {
+    const logo = document.querySelector('.logo-ny');
+    if (!logo) return;
+    
+    const isMobile = window.innerWidth < 1200;
+    
+    if (isMobile) {
+        logo.src = 'assets/loc_LogoNY.svg';
+        logo.alt = 'Яндекс Маркет - Итоги 2025';
+    } else {
+        logo.src = 'assets/Logo2.svg';
+        logo.alt = 'Яндекс Маркет - Мои итоги 2025 года';
+    }
+}
+
+// Обработчик изменения размера окна
+window.addEventListener('resize', () => {
+    updateLogoForScreenSize();
+});
 
 console.log('Слайдер "Итоги года 2025" инициализирован');
 console.log(`Карточек: ${TOTAL_CARDS}, Длительность: ${CARD_DURATION}ms`);
