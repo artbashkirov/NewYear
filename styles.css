@@ -214,6 +214,31 @@ body {
     top: 50%;
     transform: translate(-50%, -50%);
     line-height: 0;
+    /* Отключаем все нативные взаимодействия на мобильных */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: pan-y pinch-zoom;
+}
+
+.card img {
+    position: absolute;
+    inset: -1px;
+    width: calc(100% + 2px);
+    height: calc(100% + 2px);
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    /* Отключаем взаимодействие с изображением */
+    pointer-events: none;
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+    user-drag: none;
 }
 
 /* Центральная карточка */
@@ -253,16 +278,6 @@ body {
     opacity: 0;
     transform: translate(150%, -50%) scale(0.7);
     pointer-events: none;
-}
-
-.card img {
-    position: absolute;
-    inset: -1px;
-    width: calc(100% + 2px);
-    height: calc(100% + 2px);
-    object-fit: cover;
-    object-position: center;
-    display: block;
 }
 
 /* Мобильная версия: 320px - 1199px */

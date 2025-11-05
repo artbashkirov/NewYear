@@ -66,6 +66,43 @@ function initSlider() {
         slides.appendChild(card);
         allCards.push(card);
     }
+    
+    // Отключаем нативные взаимодействия на карточках
+    initCardInteractionBlockers();
+}
+
+// Блокировка нативных взаимодействий на карточках
+function initCardInteractionBlockers() {
+    const cards = document.querySelectorAll('.card');
+    
+    cards.forEach(card => {
+        // Блокируем двойной тап для зума на мобильных
+        card.addEventListener('dblclick', (e) => {
+            e.preventDefault();
+            return false;
+        });
+        
+        // Блокируем долгое нажатие (альтернативный способ)
+        let longPressTimer = null;
+        
+        card.addEventListener('touchstart', (e) => {
+            longPressTimer = setTimeout(() => {
+                // Блокируем системные действия при долгом нажатии
+            }, 500);
+        }, { passive: false });
+        
+        card.addEventListener('touchend', () => {
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+            }
+        });
+        
+        card.addEventListener('touchmove', () => {
+            if (longPressTimer) {
+                clearTimeout(longPressTimer);
+            }
+        });
+    });
 }
 
 // Обновление отображения
@@ -329,6 +366,24 @@ function initEventListeners() {
             stopAutoPlay();
         } else if (currentIndex < TOTAL_CARDS - 1) {
             startAutoPlay();
+        }
+    });
+    
+    // Отключаем все нативные взаимодействия на карточках (для мобильных)
+    
+    // Контекстное меню
+    document.addEventListener('contextmenu', (e) => {
+        if (e.target.closest('.card')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+    
+    // Drag and drop
+    document.addEventListener('dragstart', (e) => {
+        if (e.target.closest('.card')) {
+            e.preventDefault();
+            return false;
         }
     });
     
