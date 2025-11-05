@@ -5,6 +5,12 @@ let currentIndex = 0;
 let autoPlayInterval = null;
 let allCards = []; // Массив для хранения всех карточек
 
+// Управление прогресс-баром
+let progressStartTime = 0;
+let progressElapsed = 0;
+let progressAnimationId = null;
+let isPaused = false;
+
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
     initProgressBar();
@@ -23,6 +29,11 @@ function initProgressBar() {
         const segment = document.createElement('div');
         segment.className = 'progress-segment';
         segment.dataset.index = i;
+        
+        // Добавляем элемент для прогресса
+        const progressFill = document.createElement('div');
+        progressFill.className = 'progress-fill';
+        segment.appendChild(progressFill);
         
         // Клик по сегменту для перехода
         segment.addEventListener('click', () => goToCard(i));
@@ -89,17 +100,22 @@ function updateView() {
     // Обновляем прогресс-бар
     segments.forEach((segment, index) => {
         segment.classList.remove('completed', 'active');
+        const progressBar = segment.querySelector('.progress-fill');
         
         if (index < currentIndex) {
             segment.classList.add('completed');
+            if (progressBar) progressBar.style.width = '100%';
         } else if (index === currentIndex) {
-            // Последняя карточка - сразу completed (без анимации)
+            segment.classList.add('active');
+            if (progressBar) progressBar.style.width = '0%';
+            // Последняя карточка - сразу completed
             if (currentIndex === TOTAL_CARDS - 1) {
                 segment.classList.add('completed');
-            } else {
-                // Остальные - с анимацией
-                segment.classList.add('active');
+                segment.classList.remove('active');
+                if (progressBar) progressBar.style.width = '100%';
             }
+        } else {
+            if (progressBar) progressBar.style.width = '0%';
         }
     });
     
@@ -145,20 +161,83 @@ function goToCard(index) {
     }
 }
 
+// Управление прогрессом
+function updateProgress() {
+    if (isPaused || currentIndex >= TOTAL_CARDS - 1) {
+        return;
+    }
+    
+    const now = Date.now();
+    const elapsed = progressElapsed + (now - progressStartTime);
+    const progress = Math.min(elapsed / CARD_DURATION, 1);
+    
+    // Обновляем визуальный прогресс
+    const activeSegment = document.querySelector('.progress-segment.active');
+    if (activeSegment) {
+        const progressBar = activeSegment.querySelector('.progress-fill');
+        if (progressBar) {
+            progressBar.style.width = `${progress * 100}%`;
+        }
+    }
+    
+    // Если прогресс завершен, переключаем карточку
+    if (progress >= 1) {
+        nextCard();
+    } else {
+        progressAnimationId = requestAnimationFrame(updateProgress);
+    }
+}
+
+function startProgress() {
+    progressStartTime = Date.now();
+    progressElapsed = 0;
+    isPaused = false;
+    
+    if (progressAnimationId) {
+        cancelAnimationFrame(progressAnimationId);
+    }
+    
+    progressAnimationId = requestAnimationFrame(updateProgress);
+}
+
+function pauseProgress() {
+    if (!isPaused && progressAnimationId) {
+        isPaused = true;
+        const now = Date.now();
+        progressElapsed += (now - progressStartTime);
+        
+        cancelAnimationFrame(progressAnimationId);
+        progressAnimationId = null;
+    }
+}
+
+function resumeProgress() {
+    if (isPaused && currentIndex < TOTAL_CARDS - 1) {
+        isPaused = false;
+        progressStartTime = Date.now();
+        progressAnimationId = requestAnimationFrame(updateProgress);
+    }
+}
+
+function stopProgress() {
+    isPaused = false;
+    progressElapsed = 0;
+    
+    if (progressAnimationId) {
+        cancelAnimationFrame(progressAnimationId);
+        progressAnimationId = null;
+    }
+}
+
 // Автопрокрутка
 function startAutoPlay() {
     if (currentIndex < TOTAL_CARDS - 1) {
-        autoPlayInterval = setInterval(() => {
-            nextCard();
-        }, CARD_DURATION);
+        startProgress();
     }
 }
 
 function stopAutoPlay() {
-    if (autoPlayInterval) {
-        clearInterval(autoPlayInterval);
-        autoPlayInterval = null;
-    }
+    stopProgress();
 }
 
 function restartAutoPlay() {
@@ -196,18 +275,53 @@ function initEventListeners() {
     // Touch события для свайпов на мобильных
     initTouchEvents();
     
-    // Пауза при наведении на центральную карточку
+    // Пауза при наведении на центральную карточку (десктоп)
     document.addEventListener('mouseenter', (e) => {
         if (e.target.closest('.card.position-center')) {
-            stopAutoPlay();
+            pauseProgress();
         }
     }, true);
     
     document.addEventListener('mouseleave', (e) => {
         if (e.target.closest('.card.position-center') && currentIndex < TOTAL_CARDS - 1) {
-            startAutoPlay();
+            resumeProgress();
         }
     }, true);
+    
+    // Пауза при зажатии курсора на карточке (десктоп)
+    const sliderContainer = document.querySelector('.slider-container');
+    if (sliderContainer) {
+        let isMousePressed = false;
+        
+        sliderContainer.addEventListener('mousedown', (e) => {
+            if (e.target.closest('.card.position-center')) {
+                console.log('Mouse down - pausing progress');
+                isMousePressed = true;
+                pauseProgress();
+            }
+        });
+        
+        sliderContainer.addEventListener('mouseup', () => {
+            if (isMousePressed) {
+                console.log('Mouse up - resuming progress');
+                isMousePressed = false;
+                if (currentIndex < TOTAL_CARDS - 1) {
+                    resumeProgress();
+                }
+            }
+        });
+        
+        // Глобальный mouseup на случай если отпустили за пределами
+        document.addEventListener('mouseup', () => {
+            if (isMousePressed) {
+                console.log('Mouse up (global) - resuming progress');
+                isMousePressed = false;
+                if (currentIndex < TOTAL_CARDS - 1) {
+                    resumeProgress();
+                }
+            }
+        });
+    }
     
     // Пауза/возобновление при смене видимости вкладки
     document.addEventListener('visibilitychange', () => {
@@ -239,15 +353,35 @@ function initTouchEvents() {
     let touchStartY = 0;
     let touchEndY = 0;
     
+    // Пауза при касании (мобильные)
     sliderContainer.addEventListener('touchstart', (e) => {
+        if (e.target.closest('.card.position-center')) {
+            pauseProgress();
+        }
+        
         touchStartX = e.changedTouches[0].screenX;
         touchStartY = e.changedTouches[0].screenY;
     }, { passive: true });
     
+    // Возобновление после отпускания пальца
     sliderContainer.addEventListener('touchend', (e) => {
         touchEndX = e.changedTouches[0].screenX;
         touchEndY = e.changedTouches[0].screenY;
         handleSwipe();
+        
+        // Возобновляем автопрокрутку после завершения касания
+        setTimeout(() => {
+            if (currentIndex < TOTAL_CARDS - 1) {
+                resumeProgress();
+            }
+        }, 300); // Небольшая задержка для плавности
+    }, { passive: true });
+    
+    // Если палец ушел за пределы карточки
+    sliderContainer.addEventListener('touchcancel', () => {
+        if (currentIndex < TOTAL_CARDS - 1) {
+            resumeProgress();
+        }
     }, { passive: true });
     
     function handleSwipe() {

@@ -102,8 +102,7 @@ body {
     cursor: pointer;
 }
 
-.progress-segment::after {
-    content: '';
+.progress-fill {
     position: absolute;
     top: 0;
     left: 0;
@@ -111,21 +110,11 @@ body {
     width: 0%;
     background: #ffffff;
     border-radius: 1px;
-    transition: width 0.1s linear;
-}
-
-.progress-segment.completed::after {
-    width: 100%;
     transition: none;
 }
 
-.progress-segment.active::after {
-    animation: fillProgress 5s linear forwards;
-}
-
-@keyframes fillProgress {
-    from { width: 0%; }
-    to { width: 100%; }
+.progress-segment.completed .progress-fill {
+    width: 100%;
 }
 
 /* Slider Container - контейнер ТОЛЬКО для карусели */
