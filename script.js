@@ -1,9 +1,20 @@
 // Итоги года 2025 - Слайдер с макетом Figma
-const TOTAL_CARDS = 14;
+const CARD_IMAGES = [
+    'img/loc_Card_01_Full@2x.png',
+    'img/loc_Card_02_Full@2x.png',
+    'img/loc_Card_03_Full@2x.png',
+    'img/loc_Card_04_Full@2x.png',
+    'img/loc_Card_05_Full@2x.png',
+    'img/loc_Card_06_Full@2x.png',
+    'img/loc_Card_08_Full@2x.png',
+    'img/loc_Card_09_Full@2x.png'
+];
+const TOTAL_CARDS = CARD_IMAGES.length;
 const CARD_DURATION = 5000; // 5 секунд
 let currentIndex = 0;
 let autoPlayInterval = null;
 let allCards = []; // Массив для хранения всех карточек
+let actionButtonsUpdateTimeout = null;
 
 // Управление прогресс-баром
 let progressStartTime = 0;
@@ -47,15 +58,15 @@ function initSlider() {
     const slides = document.querySelector('.slides');
     
     // Создаем ВСЕ карточки сразу в DOM
-    for (let i = 0; i < TOTAL_CARDS; i++) {
+    CARD_IMAGES.forEach((src, index) => {
         const card = document.createElement('div');
         card.className = 'card';
-        card.dataset.index = i;
+        card.dataset.index = index;
         
         const img = document.createElement('img');
-        img.src = `img/loc_Card${String(i + 1).padStart(2, '0')}@2x.png`;
-        img.alt = `Итоги ${i + 1}`;
-        img.loading = i < 3 ? 'eager' : 'lazy';
+        img.src = src;
+        img.alt = `Итоги ${index + 1}`;
+        img.loading = index < 3 ? 'eager' : 'lazy';
         
         // Fallback если изображение не загрузилось
         img.onerror = () => {
@@ -65,7 +76,7 @@ function initSlider() {
         card.appendChild(img);
         slides.appendChild(card);
         allCards.push(card);
-    }
+    });
     
     // Отключаем нативные взаимодействия на карточках
     initCardInteractionBlockers();
@@ -158,6 +169,9 @@ function updateView() {
     
     // Обновляем кнопки навигации
     updateNavigationButtons();
+    
+    // Обновляем позицию блока с кнопками действий
+    scheduleActionButtonsUpdate(650); // дождаться завершения анимации карточки
 }
 
 // Следующая карточка
@@ -289,6 +303,35 @@ function updateNavigationButtons() {
     
     if (leftBtn) leftBtn.disabled = currentIndex === 0;
     if (rightBtn) rightBtn.disabled = currentIndex === TOTAL_CARDS - 1;
+}
+
+// Фиксированное позиционирование блока действий относительно карточки
+function updateActionButtonsPosition(immediate = false) {
+    const centerCard = document.querySelector('.card.position-center');
+    if (!centerCard) return;
+    
+    const update = () => {
+        const cardRect = centerCard.getBoundingClientRect();
+        const cardBottom = Math.min(cardRect.bottom, window.innerHeight);
+        document.documentElement.style.setProperty('--card-bottom', `${cardBottom}px`);
+    };
+    
+    if (immediate) {
+        update();
+    } else {
+        requestAnimationFrame(update);
+    }
+}
+
+function scheduleActionButtonsUpdate(delay = 0) {
+    if (actionButtonsUpdateTimeout) {
+        clearTimeout(actionButtonsUpdateTimeout);
+    }
+    
+    actionButtonsUpdateTimeout = setTimeout(() => {
+        updateActionButtonsPosition();
+        actionButtonsUpdateTimeout = null;
+    }, delay);
 }
 
 // Инициализация событий
@@ -448,20 +491,18 @@ function updateLogoForScreenSize() {
     const logo = document.querySelector('.logo-ny');
     if (!logo) return;
     
-    const isMobile = window.innerWidth < 1200;
-    
-    if (isMobile) {
-        logo.src = 'assets/loc_LogoNY.svg';
-        logo.alt = 'Яндекс Маркет - Итоги 2025';
-    } else {
-        logo.src = 'assets/Logo2.svg';
-        logo.alt = 'Яндекс Маркет - Мои итоги 2025 года';
-    }
+    logo.src = 'assets/loc_logo2025.svg';
+    logo.alt = 'Яндекс Маркет — Итоги 2025';
 }
 
 // Обработчик изменения размера окна
 window.addEventListener('resize', () => {
     updateLogoForScreenSize();
+    scheduleActionButtonsUpdate();
+});
+
+window.addEventListener('load', () => {
+    scheduleActionButtonsUpdate();
 });
 
 console.log('Слайдер "Итоги года 2025" инициализирован');
