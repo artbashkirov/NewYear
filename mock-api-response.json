@@ -1,0 +1,53 @@
+{
+  "cards": [
+    {
+      "id": 1,
+      "imageUrl": "img/loc_Card_01_Full@2x.png",
+      "title": "Итоги года 2025 - Карточка 1",
+      "order": 1
+    },
+    {
+      "id": 2,
+      "imageUrl": "img/loc_Card_02_Full@2x.png",
+      "title": "Итоги года 2025 - Карточка 2",
+      "order": 2
+    },
+    {
+      "id": 3,
+      "imageUrl": "img/loc_Card_03_Full@2x.png",
+      "title": "Итоги года 2025 - Карточка 3",
+      "order": 3
+    },
+    {
+      "id": 4,
+      "imageUrl": "img/loc_Card_04_Full@2x.png",
+      "title": "Итоги года 2025 - Карточка 4",
+      "order": 4
+    },
+    {
+      "id": 5,
+      "imageUrl": "img/loc_Card_05_Full@2x.png",
+      "title": "Итоги года 2025 - Карточка 5",
+      "order": 5
+    },
+    {
+      "id": 6,
+      "imageUrl": "img/loc_Card_06_Full@2x.png",
+      "title": "Итоги года 2025 - Карточка 6",
+      "order": 6
+    },
+    {
+      "id": 8,
+      "imageUrl": "img/loc_Card_08_Full@2x.png",
+      "title": "Итоги года 2025 - Карточка 8",
+      "order": 8
+    },
+    {
+      "id": 9,
+      "imageUrl": "img/loc_Card_09_Full@2x.png",
+      "title": "Итоги года 2025 - Карточка 9",
+      "order": 9
+    }
+  ]
+}
+
